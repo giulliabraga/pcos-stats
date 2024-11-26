@@ -73,20 +73,5 @@ Os objetivos específicos desse projeto incluem:
 * Análise de correlação entre as variáveis e a SOP
 
 ## Estrutura do repositório
-.
-├── data/
-│   ├── dataset1-pcos-wo_infertility.xlsx
-│   ├── dataset1-preproc.csv
-│   ├── dataset2-pcos-2023.csv
-│   ├── dataset2-preproc.csv
-│   └── integrated-dataset.csv
-├── modules/
-│   ├── eda.py
-│   └── integration_tests.py
-├── notebooks/
-│   ├── preproc_original_datasets.ipynb
-│   ├── EDA_original_datasets.ipynb
-│   ├── statistical_tests_integration.ipynb
-│   ├── EDA_integrated_dataset.ipynb
-│   └── statistical_tests_correlation.ipynb
-└── README.md
+
+. ├── data/ │ ├── dataset1-pcos-wo_infertility.xlsx │ ├── dataset1-preproc.csv │ ├── dataset2-pcos-2023.csv │ ├── dataset2-preproc.csv │ └── integrated-dataset.csv ├── modules/ │ ├── eda.py │ └── integration_tests.py ├── notebooks/ │ ├── preproc_original_datasets.ipynb │ ├── EDA_original_datasets.ipynb │ ├── statistical_tests_integration.ipynb │ ├── EDA_integrated_dataset.ipynb │ └── statistical_tests_correlation.ipynb └── README.md
