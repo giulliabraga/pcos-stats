@@ -14,9 +14,11 @@ class EDA():
     Customized class for generating a complete Exploratory Data Analysis (EDA) for a given dataset.
     '''
 
-    def __init__(self, dataset, target):
+    def __init__(self, dataset, target, categorical_columns=None, numerical_columns=None):
         self.dataset = dataset
         self.target = target
+        self.categorical_columns = categorical_columns
+        self.numerical_columns = numerical_columns
 
     def quick_overview(self):
         '''
@@ -26,16 +28,18 @@ class EDA():
         print(df.info())
         display(df.head(10))
 
-    def categorical_data_description(self, categorical_columns):
+    def categorical_data_description(self):
         '''
         Outputs a descriptive statistics table, including the value counts for each variable.
         Only works well with datasets in which the features have a limitted amount of unique values.
         '''
+        cat_cols = self.categorical_columns
+
         # Descriptive statistics
-        stats = self.dataset.describe().T
+        stats = self.dataset[cat_cols].describe().T
 
         # Unique value counts
-        value_counts = self.dataset.apply(lambda col: col.value_counts()).T
+        value_counts = self.dataset[cat_cols].apply(lambda col: col.value_counts()).T
 
         # Output containin the stats and the counts for each unique value
         categorical_data_description = (
@@ -65,10 +69,11 @@ class EDA():
 
         return profile
 
-    def countplots(self, categorical_columns):
+    def countplots(self):
         '''
         Generate countplots for the target variable and the categorical attributes (hued by the target).
         '''
+        cat_cols = self.categorical_columns
         dataset = self.dataset
         trg = self.target
 
@@ -78,7 +83,7 @@ class EDA():
         fig1.legend([-1,1],['No phishing', 'Phishing'])
 
         fig2, axes2 = plt.subplots(10, 3, figsize=(20, 30), dpi=200)
-        for ax, feature in zip(axes2.flat, categorical_columns):
+        for ax, feature in zip(axes2.flat, cat_cols):
             sns.countplot(data=dataset, x=feature, hue=trg, ax=ax, palette=sns.color_palette("Paired")[0:2])
             ax.set_title(f'Countplot - {feature}')
         
@@ -119,12 +124,12 @@ class EDA():
         '''
         self.quick_overview()
 
-        self.categorical_data_description(categorical_columns=categorical_columns)
+        self.categorical_data_description()
 
-        self.numerical_data_description(numerical_columns=numerical_columns)
+        self.numerical_data_description()
 
         self.get_profile_report()
 
-        self.countplots(categorical_columns=categorical_columns)
+        self.countplots()
 
         self.correlations()
