@@ -46,8 +46,7 @@ Além disso, **pacientes com SOP tendem a apresentar também outras complicaçõ
 ### Justificativa
 Levando-se em conta que **aproximadamente 70% dos casos de SOP mundialmente permanecem sem diagnóstico** [1], e sendo essa uma síndrome com diversas complicações severas para a saúde mental e física de suas portadoras, faz-se imprescindível o desenvolvimento de ferramentas que possam colaborar com o diagnóstico da doença.
 
-Assim, ferramentas baseadas em Aprendizagem de Máquina (*Machine Learning* - ML) podem contribuir para a identificação da SOP em mulheres em idade reprodutiva, pois a habilidade desses algoritmos em processar grandes quantidades de dados faz com que sejam ideais para o diagnóstico de transtornos heterogêneos como a SOP [5].
-
+Nesse contexto, ferramentas baseadas em Aprendizagem de Máquina (*Machine Learning* - ML) podem contribuir para a identificação da SOP em mulheres em idade reprodutiva, pois a habilidade desses algoritmos em processar grandes quantidades de dados faz com que sejam ideais para o diagnóstico de transtornos heterogêneos como a SOP [5]. Contudo, um dos desafios para o desenvolvimento de soluções baseadas em ML para o combate da SOP está associado à baixa disponibilidade de datasets públicos, o que motiva um estudo mais aprofundado das alternativas disponíveis.
 
 ### Referências
 

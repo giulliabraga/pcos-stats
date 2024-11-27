@@ -14,11 +14,12 @@ class EDA():
     Customized class for generating a complete Exploratory Data Analysis (EDA) for a given dataset.
     '''
 
-    def __init__(self, dataset, target, categorical_columns=None, numerical_columns=None):
+    def __init__(self, dataset, target, categorical_columns=None, numerical_columns=None, dataset_name=None):
         self.dataset = dataset
         self.target = target
         self.categorical_columns = categorical_columns
         self.numerical_columns = numerical_columns
+        self.dataset_name = dataset_name
 
     def quick_overview(self):
         '''
@@ -27,31 +28,43 @@ class EDA():
         df = self.dataset
         print(df.info())
         display(df.head(10))
-
+    
     def categorical_data_description(self):
         '''
-        Outputs a descriptive statistics table, including the value counts for each variable.
-        Only works well with datasets in which the features have a limitted amount of unique values.
+        Outputs a descriptive statistics table, including the value counts and percentages for each variable.
+        Displays counts in the format "value_count (percentage%)".
+        Filters out variables with more than 5 unique values.
         '''
+        # Identify categorical columns
         cat_cols = self.categorical_columns
 
+        # Filter out variables with more than 5 unique values for a better visualization
+        filtered_cols = [col for col in cat_cols if self.dataset[col].nunique() <= 5]
+
+        if not filtered_cols:
+            return None
+
         # Descriptive statistics
-        stats = self.dataset[cat_cols].describe().T
+        stats = self.dataset[filtered_cols].describe().T
 
-        # Unique value counts
-        value_counts = self.dataset[cat_cols].apply(lambda col: col.value_counts()).T
+        # Combine counts and percentages into a single format
+        value_counts_with_percentages = self.dataset[filtered_cols].apply(
+            lambda col: col.value_counts()
+            .combine(
+                col.value_counts(normalize=True).mul(100).round(2),
+                lambda count, pct: f"{count} ({pct}%)"
+            )
+        ).T
 
-        # Output containin the stats and the counts for each unique value
+        # Output containing stats and formatted counts with percentages
         categorical_data_description = (
-                                            pd.concat([stats,value_counts],axis=1)
-                                            .fillna(0)
-                                            .style
-                                            .format(precision=0)
-                                        )
-        
-        display(categorical_data_description)
+            pd.concat([stats, value_counts_with_percentages], axis=1)
+            .fillna("-")  # Fill missing values with a dash for clarity
+            .style
+            .format(precision=0)
+        )
 
-        return categorical_data_description   
+        return categorical_data_description
 
     def get_profile_report(self):
         '''
@@ -60,12 +73,13 @@ class EDA():
         dataset = self.dataset
 
         profile = ProfileReport(dataset,
-                        title='Phishing Websites Dataset'
+                        title='Profile Report'
                         )    
         
         profile.to_notebook_iframe()
         
-        profile.to_file('../outputs/profile_phishing_websites.html')
+        if self.dataset_name != None:
+            profile.to_file(f'../outputs/profile_report_{self.dataset_name}.html')
 
         return profile
 
@@ -73,6 +87,8 @@ class EDA():
         '''
         Generate countplots for the target variable and the categorical attributes (hued by the target).
         '''
+        import math
+
         cat_cols = self.categorical_columns
         dataset = self.dataset
         trg = self.target
@@ -80,17 +96,35 @@ class EDA():
         # Plotting the target variable
         fig1 = sns.countplot(x=dataset[trg])
         fig1.set_title('Target variable countplot')
-        fig1.legend([-1,1],['No phishing', 'Phishing'])
+        fig1.legend([-1, 1], ['No phishing', 'Phishing'])
 
-        fig2, axes2 = plt.subplots(10, 3, figsize=(20, 30), dpi=200)
-        for ax, feature in zip(axes2.flat, cat_cols):
+        # Dynamically determine subplot grid size
+        num_features = len(cat_cols)
+        cols = 3  # Fixed number of columns
+        rows = math.ceil(num_features / cols)  # Dynamically determine number of rows
+
+        # Create subplots
+        fig2, axes2 = plt.subplots(rows, cols, figsize=(cols * 6, rows * 4), dpi=200)
+
+        # Flatten axes for iteration (handles cases with fewer variables)
+        axes2 = axes2.flatten()
+
+        # Create countplots for each categorical variable
+        for ax, feature in zip(axes2, cat_cols):
             sns.countplot(data=dataset, x=feature, hue=trg, ax=ax, palette=sns.color_palette("Paired")[0:2])
             ax.set_title(f'Countplot - {feature}')
-        
+
+        # Hide any extra subplot axes (in case number of variables < total subplots)
+        for ax in axes2[num_features:]:
+            ax.axis('off')
+
+        # Adjust layout
         plt.tight_layout()
 
-        fig1.figure.savefig('../outputs/target_countplot.png', dpi=300)
-        fig2.savefig('../outputs/features_countplots.png', dpi=300)
+        # Save figures
+        if self.dataset_name != None:
+            fig1.figure.savefig(f'../outputs/target_countplot_{self.dataset_name}.png', dpi=300)
+            fig2.savefig(f'../outputs/features_countplots_{self.dataset_name}.png', dpi=300)
 
         plt.show()
 
@@ -108,15 +142,26 @@ class EDA():
         sns.heatmap(matrix, cmap="coolwarm", annot=False, ax=ax1)
         ax1.set_title('Complete correlation matrix')
 
-        high_corr = matrix[matrix > 0.6]
-        low_corr = matrix[matrix < -0.6]
+        high_corr = matrix[matrix > 0.5]
+        low_corr = matrix[matrix < -0.5]
         sns.heatmap(high_corr, cmap="Reds", ax=ax2)
         sns.heatmap(low_corr, cmap="Blues", ax=ax2)
-        ax2.set_title('Correlations with module over 0.6')
+        ax2.set_title('Correlações de Pearson com módulo superior a 0.5')
 
         plt.tight_layout()
-        plt.savefig('../outputs/correlations.png',dpi=300)
+
+        if self.dataset_name != None:
+            plt.savefig(f'../outputs/correlations_{self.dataset_name}.png',dpi=300)
+
         fig.show()
+
+    def correlation_with_target(self):
+        '''
+        Pearson correlation coefficient for each variable with respect to the target
+        '''
+        correlation_with_target = self.dataset.corr()[self.target].abs().sort_values(ascending=False)
+
+        display(correlation_with_target)
 
     def complete_eda(self, categorical_columns, numerical_columns):
         '''
